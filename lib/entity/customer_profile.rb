@@ -11,15 +11,15 @@ class CustomerProfile
     @address = address
   end
 
-  def premium?
-    tier == 'premium'
+  def premium_cutomer?
+    tier == CustomerTier::PREMIUM
   end
 
-  def regular?
-    tier == 'regular'
+  def regular_cutomer?
+    tier == CustomerTier::REGULAR
   end
 
-  def budget?
-    tier == 'budget'
+  def budget_cutomer?
+    tier == CustomerTier::BUDGET
   end
 end 

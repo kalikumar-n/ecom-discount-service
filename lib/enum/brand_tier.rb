@@ -6,7 +6,7 @@ module BrandTier
   BUDGET = 'budget'
 
   def self.all
-    [PREMIUM, REGULAR, BUDGET]
+    constants.map { |c| const_get(c) }
   end
 
   def self.valid?(tier)
