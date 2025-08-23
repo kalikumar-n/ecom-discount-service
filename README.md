@@ -178,7 +178,36 @@ The service includes custom exception classes:
 - `DiscountCalculationException`: Raised when discount calculation fails
 - `DiscountValidationException`: Raised when discount validation fails
 
-Class Diagram
+## Class Diagram
 
+![Alt text](images/Ecom-Discount-Module.png)
 
-Initial Instructions to Cursor
+## Initial Instructions to Cursor
+
+My Goal: Build a backend service for ecommerce discount module.
+
+Take a loot at this UML diagram (not the current version but basic one) to understand the classes and services
+
+Folder structures should be 
+
+1. Entity classes should be inside → lib/entity
+2. Service class should be inside → lib/
+3. enum class should be inside → lib/enum
+
+Steps:
+
+1. Create ruby classes for each entity
+2. Create the enum class/module
+3. Create the service class
+    
+    **Implement two methods:**
+    
+    - calculate_cart_discounts(cart_items:, customer:, payment_info: nil, coupon_code: nil)
+        - Calculates original cart price.
+        - Applies brand discount first, then category discount, then coupon discount (if valid), then bank discount (if applicable).
+        - Returns a DiscountedPrice object with original_price, final_price, applied_discounts (hash), and message.
+    - validate_discount_code(code:, cart_items:, customer:)
+        - Checks whether the given coupon code is one of 3-4 allowed codes.
+        - If valid, applies coupon discount in the calculation above.
+
+4. Create basic unit and integration testing using Rspec in the spec folder.
