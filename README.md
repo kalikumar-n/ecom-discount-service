@@ -22,15 +22,18 @@ ecom-discount-services/
 │   │   ├── cart_item.rb          # Shopping cart item
 │   │   ├── payment_info.rb       # Payment method information
 │   │   └── discounted_price.rb   # Discount calculation result
-│   ├── enum/
-│   │   └── brand_tier.rb         # Brand tier enumeration
+│   ├── enum/                     #Enum modules
+│   │   └── brand_tier.rb   
+│   │   └── card_brand.rb  
+│   │   └── card_type.rb  
+│   │   └── customer_tier.rb  
+│   │   └── payment_method.rb            
 │   ├── exceptions/               # Custom exception classes
 │   │   ├── discount_calculation_exception.rb
 │   │   └── discount_validation_exception.rb
 │   ├── discount_service.rb       # Main service class
 │   └── ecom_discount_services.rb # Main entry point
 ├── spec/                         # Test files
-├── example.rb                    # Usage example
 ├── Gemfile                       # Ruby dependencies
 └── README.md                     # This file
 ```
@@ -65,7 +68,7 @@ cart_items = [CartItem.new(product: product, quantity: 1)]
 # Create customer
 customer = CustomerProfile.new(
   id: 'CUST001',
-  tier: 'premium',
+  tier: CustomerTier::GOLD,
   email: 'customer@example.com'
 )
 
@@ -80,33 +83,29 @@ puts "Final Price: $#{result.final_price}"
 puts "Total Discount: $#{result.total_discount}"
 ```
 
-### Available Coupon Codes
+### Brand Based Discounts
 
-- `SAVE10`: 10% discount
-- `SAVE20`: 20% discount  
-- `SAVE30`: 30% discount
-- `FLAT50`: $50 flat discount
-
-### Brand Tier Discounts
-
-- **Premium**: 15% discount
-- **Regular**: 10% discount
-- **Budget**: 5% discount
+- **Puma**: 40% discount
+- **Nike**: 25% discount
+- **Adidas**: 15% discount
 
 ### Category Discounts
 
-- **Electronics**: 12% discount
-- **Clothing**: 8% discount
-- **Books**: 15% discount
-- **Home**: 10% discount
+- **Electronics**: 15% discount
+- **Clothing**: 10% discount
+- **Books**: 8% discount
+- **Home**: 5% discount
+
+### Available Coupon Codes
+
+- `SUPER69`: 69 Instant discount
+- `WELCOME10`: 10 Instant discount  
 
 ### Bank Discounts
 
-- **Chase**: 5% discount
-- **Bank of America**: 3% discount
-- **Wells Fargo**: 4% discount
-
-## API Reference
+- **ICICI**: 5% discount
+- **HDFC**: 4% discount
+- **AXIS**: 3% discount
 
 ### DiscountService
 
@@ -122,22 +121,12 @@ Calculates the total discount for a shopping cart.
 
 **Returns:** DiscountedPrice object
 
-#### `validate_discount_code(code:, cart_items:, customer:)`
-
-Validates if a coupon code is valid.
-
-**Parameters:**
-- `code`: String coupon code
-- `cart_items`: Array of CartItem objects
-- `customer`: CustomerProfile object
-
-**Returns:** Boolean
 
 ### Entity Classes
 
 #### CustomerProfile
 - `id`: String
-- `tier`: String (premium, regular, budget)
+- `tier`: ENUM (gold, silver, bronze)
 - `email`: String
 - `phone`: String (optional)
 - `address`: String (optional)
@@ -145,10 +134,10 @@ Validates if a coupon code is valid.
 #### Product
 - `id`: Integer
 - `brand`: String
-- `brandtier`: BrandTier enum value
+- `brandtier`: ENUM (premium, regular, budget)
 - `category`: String
 - `base_price`: BigDecimal
-- `current_price`: BigDecimal
+- `current_price`: BigDecimal (optional)
 
 #### CartItem
 - `product`: Product object
@@ -156,9 +145,10 @@ Validates if a coupon code is valid.
 - `size`: String (optional)
 
 #### PaymentInfo
-- `method`: String
+- `method`: ENUM (UPI, CARD, BANK_TRANSFER)
 - `bank_name`: String (optional)
-- `card_type`: String (optional)
+- `card_type`: ENUM (CREDIT_CARD, DEBIT_CARD) (optional)
+- `card_brand`: ENUM (VISA, MASTER, AMEX) (optional)
 
 #### DiscountedPrice
 - `original_price`: BigDecimal
@@ -166,18 +156,19 @@ Validates if a coupon code is valid.
 - `applied_discounts`: Hash
 - `message`: String
 
-## Running the Example
+
+## Integration tests simulate the full discount calculation process using sample/fake data. 
+## These tests validate that multiple discount strategies work together correctly.
 
 ```bash
-ruby example.rb
+bundle exec rspec spec/integration/discount_service_integration_spec.rb
 ```
 
-This will demonstrate the discount calculation with various scenarios.
-
-## Testing
+## Unit tests verify the behavior of individual components or discount strategies in isolation.
+## Example: Testing the Bank Discount strategy
 
 ```bash
-bundle exec rspec
+bundle exec rspec spec/strategies/bank_discount_spec.rb
 ```
 
 ## Error Handling
@@ -187,14 +178,7 @@ The service includes custom exception classes:
 - `DiscountCalculationException`: Raised when discount calculation fails
 - `DiscountValidationException`: Raised when discount validation fails
 
-## Contributing
+Class Diagram
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
 
-## License
-
-This project is licensed under the MIT License. 
+Initial Instructions to Cursor
