@@ -1,9 +1,5 @@
 require 'bigdecimal/util'
-require_relative 'strategies/bank_discount'
-require_relative 'strategies/category_discount'
-require_relative 'strategies/coupon_discount'
-require_relative 'strategies/brand_discount'
-require_relative 'entity/cart_item'
+require_relative '../lib/ecom_discount_services'
 
 class DiscountService
 

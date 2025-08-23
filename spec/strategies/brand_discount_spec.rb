@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative '../../lib/strategies/brand_discount'
-require_relative '../../lib/entity/cart_item'
-require_relative '../../lib/entity/product'
-require_relative '../../lib/enum/brand_tier'
+require_relative '../../lib/ecom_discount_services'
 
 
 RSpec.describe BrandDiscount do

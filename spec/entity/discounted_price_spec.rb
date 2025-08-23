@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative '../../lib/entity/discounted_price'
+require_relative '../../lib/ecom_discount_services'
 
 RSpec.describe DiscountedPrice do
   describe '#initialize' do

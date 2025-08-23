@@ -9,7 +9,7 @@ class BankDiscount < BaseDiscount
   }.freeze
 
 
-  def apply(cart_items:, current_price:, **)
+  def apply(cart_items:, current_price:, **kwargs)
     discount_amount = 0
 
     # Look up discount rate based on bank name, default to 0 if not eligible

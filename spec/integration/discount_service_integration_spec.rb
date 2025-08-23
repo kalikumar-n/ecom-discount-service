@@ -1,27 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'strategies/brand_discount'
-require 'strategies/category_discount'
-require 'strategies/coupon_discount'
-require 'strategies/bank_discount'
-
-require 'entity/cart_item'
-require 'entity/product'
-require 'entity/customer_profile'
-require 'entity/payment_info'
-require 'entity/discounted_price'
-
-require 'enum/brand_tier'
-require 'enum/customer_tier'
-require 'enum/payment_method'
-require 'enum/card_type'
-require 'enum/card_brand'
-
-require 'discount_service'
-
-require 'exceptions/discount_calculation_exception'
-require 'exceptions/discount_validation_exception'
+require_relative '../../lib/ecom_discount_services'
 
 RSpec.describe 'DiscountService Integration' do
   describe 'Complete ecommerce discount workflow' do

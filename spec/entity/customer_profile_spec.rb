@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative '../../lib/entity/customer_profile'
-require_relative '../../lib/enum/customer_tier'
+require_relative '../../lib/ecom_discount_services'
 
 RSpec.describe CustomerProfile do
   describe '#initialize' do

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative '../../lib/strategies/base_discount'
+require_relative '../../lib/ecom_discount_services'
 
 RSpec.describe BaseDiscount do
   let(:base_discount) { BaseDiscount.new }

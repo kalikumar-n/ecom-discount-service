@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative '../../lib/strategies/bank_discount'
-require_relative '../../lib/enum/card_type'
-require_relative '../../lib/enum/payment_method'
-require_relative '../../lib/enum/card_brand'
-require_relative '../../lib/entity/payment_info'
+require_relative '../../lib/ecom_discount_services'
 
 
 RSpec.describe BankDiscount do
