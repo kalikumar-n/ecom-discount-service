@@ -1,6 +1,6 @@
 module CustomerTier
   GOLD = :gold
-  REGULAR = :silver
+  SILVER = :silver
   BRONZE = :bronze
 
   def self.all

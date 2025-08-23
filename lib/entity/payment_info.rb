@@ -12,31 +12,15 @@ class PaymentInfo
     @card_brand = card_brand
   end
 
-  def upi_payment?
-    method == PaymentMethod::UPI
+  def payment_method?(payment_value)
+    method == value
   end
 
-  def card_payment?
-    method == PaymentMethod::CARD
+  def card_type?(card_value)
+    card_type == card_value
   end
 
-  def bank_transfer?
-    method == PaymentMethod::BANK_TRANSFER
-  end
-
-  def credit_card?
-    card_type == CardType::CREDIT_CARD
-  end
-
-  def debit_card?
-    card_type == CardType::DEBIT_CARD
-  end
-
-  def visa?
+  def card_brand?(brand_value)
     card_brand == CardBrand::VISA
-  end
-
-  def mastercard?
-    card_brand == CardBrand::MASTERCARD
   end
 end 

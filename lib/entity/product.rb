@@ -16,25 +16,18 @@ class Product
     @current_price = current_price || base_price
   end
 
-  def premium_brand?
-    brandtier == BrandTier::PREMIUM
-  end
-
-  def regular_brand?
-    brandtier == BrandTier::REGULAR
-  end
-
-  def budget_brand?
-    brandtier == BrandTier::BUDGET
+  def tier?(tier_value)
+    tier == tier_value
   end
 
   def product_details
     <<~DETAILS
-      1. Product(id: #{id})
+      1. Product id: #{id}
       2. brand: #{brand}
       3. brandtier: #{brandtier}
       4. category: #{category}
-      5. baseprice: #{baseprice}%)
+      5. base price: #{base_price}
+      6. current price: #{current_price}
     DETAILS
   end
 end 

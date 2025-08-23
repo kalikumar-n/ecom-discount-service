@@ -6,7 +6,7 @@ class CouponDiscount < BaseDiscount
       amount: 69, # amount 69 will be applied as instance discount
       excluded_brands: ['NIKE'],
       allowed_categories: ['clothing', 'shoes'],
-      required_customer_tier: [CustomerTier::GOLD, CustomerTier::Silver]
+      required_customer_tier: [CustomerTier::GOLD, CustomerTier::SILVER]
     },
     'WELCOME10' => {
       amount: 10, # amount 69 will be applied as instance discount

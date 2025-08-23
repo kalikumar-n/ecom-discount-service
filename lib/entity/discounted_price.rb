@@ -2,7 +2,7 @@
 require 'bigdecimal'
 
 class DiscountedPrice
-  attr_accessor :original_price, :final_price, :applied_discounts, :message
+  attr_reader :original_price, :final_price, :applied_discounts, :message
 
   def initialize(original_price:, final_price:, applied_discounts: {}, message: '')
     raise ArgumentError, 'original_price must be numeric' unless original_price.is_a?(Numeric)
@@ -32,7 +32,7 @@ class DiscountedPrice
       2. final: #{format_price(final_price)}
       3. discount: #{format_price(total_discount)}
       4. percent: #{format_price(discount_percentage)}%
-      5. Applied Discounts: #{applied_discounts.map { |k, v| "#{k}: #{v}" }.join(", ")}
+      5. Applied Discounts: #{formated_discounts.map { |k, v| "#{k}: #{v}" }.join(", ")}
     DETAILS
   end
 
@@ -40,7 +40,7 @@ class DiscountedPrice
     BigDecimal(price).to_s('F')
   end
   
-  def applied_discounts
+  def formated_discounts
     @applied_discounts.transform_values { |price| format_price(price) }
   end
 end 
