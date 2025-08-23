@@ -4,6 +4,10 @@ class CustomerProfile
   attr_accessor :id, :tier, :email, :phone, :address
 
   def initialize(id:, tier:, email:, phone: nil, address: nil)
+    raise ArgumentError, "id must be provided" if id.nil? || id.empty?
+    raise ArgumentError, "Invalid tier" unless CustomerTier.all.include?(tier)
+    raise ArgumentError, "email must be provided" if email.nil? || email.empty?  
+
     @id = id
     @tier = tier
     @email = email
@@ -11,15 +15,16 @@ class CustomerProfile
     @address = address
   end
 
-  def premium_cutomer?
+  def premium_customer?
     tier == CustomerTier::PREMIUM
   end
-
-  def regular_cutomer?
+  
+  def regular_customer?
     tier == CustomerTier::REGULAR
   end
-
-  def budget_cutomer?
+  
+  def budget_customer?
     tier == CustomerTier::BUDGET
   end
+  
 end 
