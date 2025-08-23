@@ -4,8 +4,8 @@ class Product
   attr_accessor :id, :brand, :brandtier, :category, :base_price, :current_price
 
   def initialize(id:, brand:, brandtier:, category:, base_price:, current_price: nil)
-    raise ArgumentError, "id must be present" if id.nil? || id.empty?
-    raise ArgumentError, "brand tier is invalid" unless BrandTier.all.include?(brand_tier)
+    raise ArgumentError, "id must be present" if id.nil?
+    raise ArgumentError, "brand tier is invalid" unless BrandTier.all.include?(brandtier)
     raise ArgumentError, "base_price must be numeric" unless base_price.is_a?(Numeric)
 
     @id = id

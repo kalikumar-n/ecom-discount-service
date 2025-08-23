@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'bigdecimal'
 
 class DiscountedPrice
   attr_accessor :original_price, :final_price, :applied_discounts, :message
@@ -27,11 +28,19 @@ class DiscountedPrice
 
   def print_details
     <<~DETAILS
-      1. DiscountedPrice(original: #{original_price})
-      2. final: #{final_price}
-      3. discount: #{total_discount}
-      4. percent: #{discount_percentage}%)
+      1. Original Price: #{format_price(original_price)}
+      2. final: #{format_price(final_price)}
+      3. discount: #{format_price(total_discount)}
+      4. percent: #{format_price(discount_percentage)}%
+      5. Applied Discounts: #{applied_discounts.map { |k, v| "#{k}: #{v}" }.join(", ")}
     DETAILS
   end
+
+  def format_price(price)
+    BigDecimal(price).to_s('F')
+  end
   
+  def applied_discounts
+    @applied_discounts.transform_values { |price| format_price(price) }
+  end
 end 
