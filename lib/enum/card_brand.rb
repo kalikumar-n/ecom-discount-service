@@ -8,7 +8,7 @@ module CardBrand
   end
 
   def self.valid?(brand)
-    all.include? tier
+    all.include? brand
   end
 
 end

@@ -1,11 +1,12 @@
 require_relative 'base_discount'
+require_relative '../enum/customer_tier'  # <-- add this line
 
 class CouponDiscount < BaseDiscount
   VOUCHERS = {
     'SUPER69' => {
       amount: 69, # amount 69 will be applied as instance discount
       excluded_brands: ['NIKE'],
-      allowed_categories: ['clothing', 'shoes'],
+      allowed_categories: ['clothing', 'shoes', 'electronics'],
       required_customer_tier: [CustomerTier::GOLD, CustomerTier::SILVER]
     },
     'WELCOME10' => {
@@ -26,8 +27,9 @@ class CouponDiscount < BaseDiscount
     return { final_price: current_price, applied_discounts: {} } unless valid_for_customer?(voucher, customer)
     return { final_price: current_price, applied_discounts: {} } unless valid_for_cart?(voucher, cart_items)
 
-    discount_amount = voucher[:amount].round(2)
+    discount_amount = [voucher[:amount], current_price].min.round(2) 
     final_price = current_price - discount_amount
+
     {
       final_price: final_price,
       applied_discounts: { "Coupon: #{coupon_code}" => discount_amount }
@@ -37,7 +39,11 @@ class CouponDiscount < BaseDiscount
   private
 
   def valid_for_customer?(voucher, customer)
-    voucher[:required_customer_tier].include? customer.tier
+    if voucher[:required_customer_tier].any?
+      voucher[:required_customer_tier].include?(customer.tier)
+    else
+      true
+    end 
   end
 
   def valid_for_cart?(voucher, cart_items)
@@ -48,6 +54,8 @@ class CouponDiscount < BaseDiscount
       # category restriction (if present, at least one must match)
       if voucher[:allowed_categories].any?
         voucher[:allowed_categories].map(&:downcase).include?(item.product.category.downcase)
+      else
+        true
       end
     end
   end

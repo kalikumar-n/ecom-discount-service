@@ -17,7 +17,7 @@ class Product
   end
 
   def tier?(tier_value)
-    tier == tier_value
+    brandtier == tier_value
   end
 
   def product_details

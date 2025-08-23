@@ -10,7 +10,7 @@ class CategoryDiscount < BaseDiscount
   }.freeze
 
   def apply(cart_items:, current_price:, **)
-    discount_amount = 0.to_d
+    discount_amount = 0
 
     cart_items.each do |item|
       category = item.product.category

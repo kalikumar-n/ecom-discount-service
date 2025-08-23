@@ -59,7 +59,7 @@ RSpec.describe Product do
         base_price: 999.99
       )
 
-      expect(product.premium_brand?).to be true
+      expect(product.tier?(:premium)).to be true
     end
 
     it 'returns false for non-premium brand tier' do
@@ -71,7 +71,7 @@ RSpec.describe Product do
         base_price: 799.99
       )
 
-      expect(product.premium_brand?).to be false
+      expect(product.tier?(:premium)).to be false
     end
   end
 
@@ -85,7 +85,7 @@ RSpec.describe Product do
         base_price: 799.99
       )
 
-      expect(product.regular_brand?).to be true
+      expect(product.tier?(:regular)).to be true
     end
 
     it 'returns false for non-regular brand tier' do
@@ -97,7 +97,7 @@ RSpec.describe Product do
         base_price: 999.99
       )
 
-      expect(product.regular_brand?).to be false
+      expect(product.tier?(:regular)).to be false
     end
   end
 
@@ -111,7 +111,7 @@ RSpec.describe Product do
         base_price: 29.99
       )
 
-      expect(product.budget_brand?).to be true
+      expect(product.tier?(:budget)).to be true
     end
 
     it 'returns false for non-budget brand tier' do
@@ -123,7 +123,7 @@ RSpec.describe Product do
         base_price: 999.99
       )
 
-      expect(product.budget_brand?).to be false
+      expect(product.tier?(:budget)).to be false
     end
   end
 end 

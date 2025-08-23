@@ -6,8 +6,8 @@ class CustomerProfile
   def initialize(id:, tier:, email:, phone: nil, address: nil)
     raise ArgumentError, "id must be provided" if id.nil?
     
-    unless CustomerTier.all.include?(tier)
-      raise ArgumentError, "Invalid tier: #{tier.inspect}. Must be one of: #{valid_tiers.join(', ')}"
+    unless CustomerTier.valid?(tier)
+      raise ArgumentError, "Invalid tier: #{tier.inspect}. Must be one of: #{CustomerTier.all.join(', ')}"
     end
 
     raise ArgumentError, "email must be provided" if email.nil? || email.empty?  

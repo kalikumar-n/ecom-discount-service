@@ -2,25 +2,26 @@
 
 require 'spec_helper'
 require_relative '../../lib/entity/customer_profile'
+require_relative '../../lib/enum/customer_tier'
 
 RSpec.describe CustomerProfile do
   describe '#initialize' do
     it 'creates a customer profile with required attributes' do
       customer = CustomerProfile.new(
         id: 'CUST001',
-        tier: 'premium',
+        tier: CustomerTier::GOLD,
         email: 'customer@example.com'
       )
 
       expect(customer.id).to eq('CUST001')
-      expect(customer.tier).to eq('premium')
+      expect(customer.tier).to eq(:gold)
       expect(customer.email).to eq('customer@example.com')
     end
 
     it 'creates a customer profile with optional attributes' do
       customer = CustomerProfile.new(
         id: 'CUST002',
-        tier: 'regular',
+        tier: CustomerTier::SILVER,
         email: 'customer2@example.com',
         phone: '+1234567890',
         address: '123 Main St, City, State'
@@ -33,7 +34,7 @@ RSpec.describe CustomerProfile do
     it 'sets optional attributes to nil when not provided' do
       customer = CustomerProfile.new(
         id: 'CUST003',
-        tier: 'budget',
+        tier: CustomerTier::BRONZE,
         email: 'customer3@example.com'
       )
 
@@ -42,69 +43,41 @@ RSpec.describe CustomerProfile do
     end
   end
 
-  describe '#premium?' do
-    it 'returns true for premium tier' do
-      customer = CustomerProfile.new(
-        id: 'CUST001',
-        tier: 'premium',
-        email: 'customer@example.com'
-      )
+  describe 'tier validation' do
+    it 'accepts valid customer tiers' do
+      expect {
+        CustomerProfile.new(
+          id: 'CUST001',
+          tier: CustomerTier::GOLD,
+          email: 'customer@example.com'
+        )
+      }.not_to raise_error
 
-      expect(customer.premium?).to be true
+      expect {
+        CustomerProfile.new(
+          id: 'CUST002',
+          tier: CustomerTier::SILVER,
+          email: 'customer2@example.com'
+        )
+      }.not_to raise_error
+
+      expect {
+        CustomerProfile.new(
+          id: 'CUST003',
+          tier: CustomerTier::BRONZE,
+          email: 'customer3@example.com'
+        )
+      }.not_to raise_error
     end
 
-    it 'returns false for non-premium tier' do
-      customer = CustomerProfile.new(
-        id: 'CUST002',
-        tier: 'regular',
-        email: 'customer@example.com'
-      )
-
-      expect(customer.premium?).to be false
-    end
-  end
-
-  describe '#regular?' do
-    it 'returns true for regular tier' do
-      customer = CustomerProfile.new(
-        id: 'CUST001',
-        tier: 'regular',
-        email: 'customer@example.com'
-      )
-
-      expect(customer.regular?).to be true
-    end
-
-    it 'returns false for non-regular tier' do
-      customer = CustomerProfile.new(
-        id: 'CUST002',
-        tier: 'premium',
-        email: 'customer@example.com'
-      )
-
-      expect(customer.regular?).to be false
-    end
-  end
-
-  describe '#budget?' do
-    it 'returns true for budget tier' do
-      customer = CustomerProfile.new(
-        id: 'CUST001',
-        tier: 'budget',
-        email: 'customer@example.com'
-      )
-
-      expect(customer.budget?).to be true
-    end
-
-    it 'returns false for non-budget tier' do
-      customer = CustomerProfile.new(
-        id: 'CUST002',
-        tier: 'premium',
-        email: 'customer@example.com'
-      )
-
-      expect(customer.budget?).to be false
+    it 'raises error for invalid customer tier' do
+      expect {
+        CustomerProfile.new(
+          id: 'CUST001',
+          tier: 'invalid',
+          email: 'customer@example.com'
+        )
+      }.to raise_error(ArgumentError, /Invalid tier:/)
     end
   end
 end 

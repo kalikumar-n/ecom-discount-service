@@ -1,5 +1,5 @@
 require_relative 'base_discount'
-
+require 'bigdecimal'
 class BankDiscount < BaseDiscount
 
   BANK_DISCOUNTS = {
@@ -10,8 +10,8 @@ class BankDiscount < BaseDiscount
 
 
   def apply(cart_items:, current_price:, payment_info:, **)
-    discount_amount = 0.to_d
-    rate = BANK_DISCOUNTS[payment_info.bank_name.upcase] || 0.to_d
+    discount_amount = 0
+    rate = BANK_DISCOUNTS[payment_info&.bank_name&.upcase] || 0
     discount_amount = (current_price * rate).round(2)
     final_price = current_price - discount_amount
 

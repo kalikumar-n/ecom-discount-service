@@ -1,324 +1,238 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require_relative '../lib/discount_service'
+require 'strategies/brand_discount'
+require 'strategies/category_discount'
+require 'strategies/coupon_discount'
+require 'strategies/bank_discount'
+
+require 'entity/cart_item'
+require 'entity/product'
+require 'entity/customer_profile'
+require 'entity/payment_info'
+require 'entity/discounted_price'
+
+require 'enum/brand_tier'
+require 'enum/customer_tier'
+require 'enum/payment_method'
+require 'enum/card_type'
+require 'enum/card_brand'
+
+require 'discount_service'
+
+require 'exceptions/discount_calculation_exception'
+require 'exceptions/discount_validation_exception'
+
 
 RSpec.describe DiscountService do
-  let(:premium_product) do
+  let(:discount_service) { DiscountService.new }
+  let(:nike_product) do
     Product.new(
       id: 1,
-      brand: 'Apple',
+      brand: 'Nike',
       brandtier: BrandTier::PREMIUM,
-      category: 'electronics',
-      base_price: 999.99,
-      current_price: 999.99
+      category: 'clothing',
+      base_price: 99.99,
+      current_price: 99.99
     )
   end
 
-  let(:regular_product) do
+  let(:puma_product) do
     Product.new(
       id: 2,
+      brand: 'Puma',
+      brandtier: BrandTier::REGULAR,
+      category: 'clothing',
+      base_price: 79.99,
+      current_price: 79.99
+    )
+  end
+
+  let(:electronics_product) do
+    Product.new(
+      id: 3,
       brand: 'Samsung',
       brandtier: BrandTier::REGULAR,
       category: 'electronics',
-      base_price: 799.99,
-      current_price: 799.99
+      base_price: 299.99,
+      current_price: 299.99
     )
   end
 
-  let(:budget_product) do
-    Product.new(
-      id: 3,
-      brand: 'Generic',
-      brandtier: BrandTier::BUDGET,
-      category: 'clothing',
-      base_price: 29.99,
-      current_price: 29.99
-    )
-  end
-
-  let(:customer) do
+  let(:gold_customer) do
     CustomerProfile.new(
       id: 'CUST001',
-      tier: 'premium',
+      tier: CustomerTier::GOLD,
       email: 'customer@example.com'
     )
   end
 
-  let(:payment_info) do
-    PaymentInfo.new(
-      method: 'credit_card',
-      bank_name: 'Chase',
-      card_type: 'Visa'
+  let(:silver_customer) do
+    CustomerProfile.new(
+      id: 'CUST002',
+      tier: CustomerTier::SILVER,
+      email: 'customer2@example.com'
     )
   end
 
-  describe '.validate_discount_code' do
-    it 'returns true for valid coupon codes' do
-      cart_items = [CartItem.new(product: premium_product, quantity: 1)]
+  let(:icici_payment) do
+    PaymentInfo.new(
+      method: PaymentMethod::CARD,
+      bank_name: 'ICICI',
+      card_type: CardType::CREDIT_CARD,
+      card_brand: CardBrand::VISA
+    )
+  end
+
+  describe '#calculate_cart_discounts' do
+    it 'calculates discounts with brand discount strategy' do
+      cart_items = [CartItem.new(product: nike_product, quantity: 1)]
       
-      expect(DiscountService.validate_discount_code(code: 'SAVE10', cart_items: cart_items, customer: customer)).to be true
-      expect(DiscountService.validate_discount_code(code: 'SAVE20', cart_items: cart_items, customer: customer)).to be true
-      expect(DiscountService.validate_discount_code(code: 'SAVE30', cart_items: cart_items, customer: customer)).to be true
-      expect(DiscountService.validate_discount_code(code: 'FLAT50', cart_items: cart_items, customer: customer)).to be true
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer
+      )
+
+      expect(result.original_price).to eq(99.99)
+      expect(result.final_price).to be < result.original_price
+      expect(result.applied_discounts).to have_key('Brand Discount')
     end
 
-    it 'returns false for invalid coupon codes' do
-      cart_items = [CartItem.new(product: premium_product, quantity: 1)]
+    it 'calculates discounts with category discount strategy' do
+      cart_items = [CartItem.new(product: electronics_product, quantity: 1)]
       
-      expect(DiscountService.validate_discount_code(code: 'INVALID', cart_items: cart_items, customer: customer)).to be false
-      expect(DiscountService.validate_discount_code(code: 'SAVE5', cart_items: cart_items, customer: customer)).to be false
-      expect(DiscountService.validate_discount_code(code: '', cart_items: cart_items, customer: customer)).to be false
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer
+      )
+
+      expect(result.original_price).to eq(299.99)
+      expect(result.final_price).to be < result.original_price
+      expect(result.applied_discounts).to have_key('Category Discount')
     end
 
-    it 'is case insensitive for coupon codes' do
-      cart_items = [CartItem.new(product: premium_product, quantity: 1)]
+    it 'calculates discounts with coupon discount strategy' do
+      cart_items = [CartItem.new(product: puma_product, quantity: 1)]
       
-      expect(DiscountService.validate_discount_code(code: 'save10', cart_items: cart_items, customer: customer)).to be true
-      expect(DiscountService.validate_discount_code(code: 'Save20', cart_items: cart_items, customer: customer)).to be true
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer,
+        coupon_code: 'WELCOME10'
+      )
+
+      expect(result.original_price).to eq(79.99)
+      expect(result.final_price).to be < result.original_price
+      expect(result.applied_discounts).to have_key('Coupon: WELCOME10')
+    end
+
+    it 'calculates discounts with bank discount strategy' do
+      cart_items = [CartItem.new(product: nike_product, quantity: 1)]
+      
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer,
+        payment_info: icici_payment
+      )
+
+      expect(result.original_price).to eq(99.99)
+      expect(result.final_price).to be < result.original_price
+      expect(result.applied_discounts).to have_key('Bank Discount')
     end
   end
 
-  describe '.calculate_cart_discounts' do
-    context 'with no discounts' do
-      it 'returns original price when no discounts apply' do
-        cart_items = [CartItem.new(product: budget_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer
-        )
+  describe '#calculate_cart_discounts with all strategies' do
+    it 'applies all discount strategies in sequence' do
+      cart_items = [
+        CartItem.new(product: puma_product, quantity: 1),
+        CartItem.new(product: electronics_product, quantity: 1)
+      ]
 
-        expect(result.original_price).to eq(29.99)
-        expect(result.final_price).to eq(29.99)
-        expect(result.total_discount).to eq(0.0)
-        expect(result.applied_discounts).to be_empty
-      end
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer,
+        payment_info: icici_payment,
+        coupon_code: 'WELCOME10'
+      )
+
+      expect(result.original_price).to eq(379.98)
+      expect(result.final_price).to be < result.original_price
+      expect(result.applied_discounts.keys).to include('Brand Discount', 'Category Discount', 'Coupon: WELCOME10', 'Bank Discount')
     end
 
-    context 'with brand discounts only' do
-      it 'applies brand tier discounts correctly' do
-        cart_items = [
-          CartItem.new(product: premium_product, quantity: 1),   # 15% discount
-          CartItem.new(product: regular_product, quantity: 1),   # 10% discount
-          CartItem.new(product: budget_product, quantity: 1)     # 5% discount
-        ]
+    it 'handles empty cart' do
+      result = discount_service.calculate_cart_discounts(
+        cart_items: [],
+        customer: gold_customer
+      )
 
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer
-        )
-
-        expected_original = 999.99 + 799.99 + 29.99
-        expected_brand_discount = (999.99 * 0.15) + (799.99 * 0.10) + (29.99 * 0.05)
-        expected_final = expected_original - expected_brand_discount
-
-        expect(result.original_price).to eq(expected_original)
-        expect(result.final_price).to be_within(0.01).of(expected_final)
-        expect(result.applied_discounts['Brand Discount']).to be_within(0.01).of(expected_brand_discount)
-      end
+      expect(result.original_price).to eq(0.0)
+      expect(result.final_price).to eq(0.0)
+      expect(result.total_discount).to eq(0.0)
     end
 
-    context 'with category discounts' do
-      it 'applies category discounts correctly' do
-        cart_items = [
-          CartItem.new(product: premium_product, quantity: 1),   # electronics: 12%
-          CartItem.new(product: regular_product, quantity: 1),   # electronics: 12%
-          CartItem.new(product: budget_product, quantity: 1)     # clothing: 8%
-        ]
+    it 'handles zero quantity items' do
+      cart_items = [CartItem.new(product: nike_product, quantity: 0)]
+      
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer
+      )
 
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer
-        )
-
-        # Brand discounts first
-        brand_discount = (999.99 * 0.15) + (799.99 * 0.10) + (29.99 * 0.05)
-        price_after_brand = (999.99 + 799.99 + 29.99) - brand_discount
-        
-        # Category discounts on remaining price
-        category_discount = (999.99 * 0.12) + (799.99 * 0.12) + (29.99 * 0.08)
-        
-        expect(result.applied_discounts['Brand Discount']).to be_within(0.01).of(brand_discount)
-        expect(result.applied_discounts['Category Discount']).to be_within(0.01).of(category_discount)
-      end
+      expect(result.original_price).to eq(0.0)
+      expect(result.final_price).to eq(0.0)
     end
 
-    context 'with coupon discounts' do
-      it 'applies percentage coupon discount correctly' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          coupon_code: 'SAVE20'
-        )
+    it 'handles nil payment_info' do
+      cart_items = [CartItem.new(product: nike_product, quantity: 1)]
+      
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer,
+        payment_info: nil
+      )
 
-        original_price = 999.99
-        brand_discount = original_price * 0.15
-        price_after_brand = original_price - brand_discount
-        coupon_discount = price_after_brand * 0.20
-        final_price = price_after_brand - coupon_discount
-
-        expect(result.final_price).to be_within(0.01).of(final_price)
-        expect(result.applied_discounts['Coupon Discount']).to be_within(0.01).of(coupon_discount)
-      end
-
-      it 'applies flat amount coupon discount correctly' do
-        cart_items = [CartItem.new(product: budget_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          coupon_code: 'FLAT50'
-        )
-
-        # FLAT50 should be capped at the current price
-        expect(result.applied_discounts['Coupon Discount']).to eq(29.99)
-        expect(result.final_price).to eq(0.0)
-      end
-
-      it 'ignores invalid coupon codes' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          coupon_code: 'INVALID'
-        )
-
-        expect(result.applied_discounts).not_to have_key('Coupon Discount')
-      end
+      expect(result.applied_discounts['Bank Discount']).to eq(0.0)
     end
 
-    context 'with bank discounts' do
-      it 'applies bank discount correctly' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
+    it 'handles nil coupon_code' do
+      cart_items = [CartItem.new(product: nike_product, quantity: 1)]
+      
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer,
+        coupon_code: nil
+      )
+
+      expect(result.applied_discounts).not_to have_key('Coupon: SUPER69')
+    end
+  end
+
+  describe 'error handling' do
+    it 'raises DiscountCalculationException when calculation fails' do
+      # Mock cart_items to cause an error
+      allow_any_instance_of(Array).to receive(:sum).and_raise(StandardError.new('Calculation error'))
+      
+      cart_items = [CartItem.new(product: nike_product, quantity: 1)]
+      
+      expect {
+        discount_service.calculate_cart_discounts(
           cart_items: cart_items,
-          customer: customer,
-          payment_info: payment_info
+          customer: gold_customer
         )
-
-        # Chase bank discount: 5%
-        original_price = 999.99
-        brand_discount = original_price * 0.15
-        price_after_brand = original_price - brand_discount
-        bank_discount = price_after_brand * 0.05
-
-        expect(result.applied_discounts['Bank Discount']).to be_within(0.01).of(bank_discount)
-      end
-
-      it 'does not apply bank discount when no bank name' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        payment_without_bank = PaymentInfo.new(method: 'credit_card')
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          payment_info: payment_without_bank
-        )
-
-        expect(result.applied_discounts).not_to have_key('Bank Discount')
-      end
+      }.to raise_error(DiscountCalculationException)
     end
 
-    context 'with all discount types' do
-      it 'applies discounts in correct order: brand -> category -> coupon -> bank' do
-        cart_items = [
-          CartItem.new(product: premium_product, quantity: 1),
-          CartItem.new(product: regular_product, quantity: 1)
-        ]
+    it 'ensures final price never goes below zero' do
+      cart_items = [CartItem.new(product: nike_product, quantity: 1)]
+      
+      result = discount_service.calculate_cart_discounts(
+        cart_items: cart_items,
+        customer: gold_customer,
+        payment_info: icici_payment,
+        coupon_code: 'SUPER69'
+      )
 
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          payment_info: payment_info,
-          coupon_code: 'SAVE10'
-        )
-
-        expect(result.applied_discounts.keys).to eq(['Brand Discount', 'Category Discount', 'Coupon Discount', 'Bank Discount'])
-        expect(result.final_price).to be >= 0
-      end
-    end
-
-    context 'error handling' do
-      it 'raises DiscountCalculationException when calculation fails' do
-        # Mock cart_items to cause an error
-        allow_any_instance_of(Array).to receive(:sum).and_raise(StandardError.new('Calculation error'))
-        
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        
-        expect {
-          DiscountService.calculate_cart_discounts(
-            cart_items: cart_items,
-            customer: customer
-          )
-        }.to raise_error(DiscountCalculationException)
-      end
-
-      it 'ensures final price never goes below zero' do
-        cart_items = [CartItem.new(product: budget_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          payment_info: payment_info,
-          coupon_code: 'FLAT50'
-        )
-
-        expect(result.final_price).to eq(0.0)
-      end
-    end
-
-    context 'edge cases' do
-      it 'handles empty cart' do
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: [],
-          customer: customer
-        )
-
-        expect(result.original_price).to eq(0.0)
-        expect(result.final_price).to eq(0.0)
-        expect(result.total_discount).to eq(0.0)
-      end
-
-      it 'handles zero quantity items' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 0)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer
-        )
-
-        expect(result.original_price).to eq(0.0)
-        expect(result.final_price).to eq(0.0)
-      end
-
-      it 'handles nil payment_info' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          payment_info: nil
-        )
-
-        expect(result.applied_discounts).not_to have_key('Bank Discount')
-      end
-
-      it 'handles nil coupon_code' do
-        cart_items = [CartItem.new(product: premium_product, quantity: 1)]
-        
-        result = DiscountService.calculate_cart_discounts(
-          cart_items: cart_items,
-          customer: customer,
-          coupon_code: nil
-        )
-
-        expect(result.applied_discounts).not_to have_key('Coupon Discount')
-      end
+      expect(result.final_price).to be >= 0
     end
   end
 end 

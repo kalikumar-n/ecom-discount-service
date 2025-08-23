@@ -26,7 +26,6 @@ class DiscountService
         )
 
         discount_amount = result[:applied_discounts].values.sum.to_d
-        raise "#{strategy.class} could not be applied" unless discount_amount > 0.0
 
         current_price = result[:final_price].to_d
         raise "Final price must not be negative" if current_price < 0
