@@ -6,10 +6,14 @@ require_relative 'strategies/brand_discount'
 require_relative 'entity/cart_item'
 
 class DiscountService
+
+  # Strategies are applied in the given order.
+  # By default: Brand -> Category -> Coupon -> Bank.
   def initialize(strategies = default_strategies)
     @strategies = strategies
   end
 
+  # Calculates total discounts for the given cart.
   def calculate_cart_discounts(cart_items:, customer:, payment_info: nil, coupon_code: nil)
     begin
       original_price = calculate_original_price(cart_items)
@@ -17,6 +21,7 @@ class DiscountService
       applied_discounts = {}
 
       @strategies.each do |strategy|
+        # Each strategy returns a hash: { final_price:, applied_discounts: {} }
         result = strategy.apply(
           cart_items: cart_items,
           current_price: current_price,
@@ -25,17 +30,20 @@ class DiscountService
           customer: customer
         )
 
+        # Track discount amount and update current total
         discount_amount = result[:applied_discounts].values.sum.to_d
-
         current_price = result[:final_price].to_d
+
         raise "Final price must not be negative" if current_price < 0
 
+         # Merge this strategy's discounts into overall record
         result[:applied_discounts].each do |name, amount|
           applied_discounts[name] ||= 0.to_d
           applied_discounts[name] += amount.to_d
         end
       end
 
+      # Safety net: final price cannot be below zero
       current_price = [current_price, 0.to_d].max
 
       DiscountedPrice.new(

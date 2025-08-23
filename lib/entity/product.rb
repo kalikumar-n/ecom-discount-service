@@ -13,13 +13,17 @@ class Product
     @brandtier = brandtier
     @category = category
     @base_price = base_price
+
+    # If current_price not provided, default to base_price
     @current_price = current_price || base_price
   end
 
+  # Helper method to check if product belongs to a specific brand tier
   def tier?(tier_value)
     brandtier == tier_value
   end
 
+  # Pretty-prints product details in a readable format
   def product_details
     <<~DETAILS
       1. Product id: #{id}

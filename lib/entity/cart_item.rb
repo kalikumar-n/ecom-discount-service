@@ -4,6 +4,7 @@ class CartItem
   attr_accessor :product, :quantity, :size
 
   def initialize(product:, quantity:, size: nil)
+    # Ensure quantity is a non-negative integer
     raise ArgumentError, 'Quantity must be a positive Integer' unless quantity.is_a?(Integer) && quantity >= 0
 
     @product = product

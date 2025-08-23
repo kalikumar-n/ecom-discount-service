@@ -1,5 +1,7 @@
 require_relative 'base_discount'
 
+# Applies brand-based discounts on cart items.
+# Supported brands and their discount rates are listed in BRANDS.
 class BrandDiscount < BaseDiscount
 
   BRANDS = {
@@ -8,6 +10,8 @@ class BrandDiscount < BaseDiscount
     'nike' => 0.25   # 25% discount for nike brand
   }.freeze
 
+  # Iterates over cart_items, applies brand-specific discounts, 
+  # and returns the updated final price along with discount breakdown.
   def apply(cart_items:, current_price:, **)
     discount_amount = 0.0
 

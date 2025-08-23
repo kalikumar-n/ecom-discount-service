@@ -7,6 +7,8 @@ class DiscountedPrice
   def initialize(original_price:, final_price:, applied_discounts: {}, message: '')
     raise ArgumentError, 'original_price must be numeric' unless original_price.is_a?(Numeric)
     raise ArgumentError, 'final_price must be numeric' unless final_price.is_a?(Numeric)
+    
+    # Ensure discounting logic is valid (no price inflation by mistake)
     if final_price > original_price
       raise ArgumentError, 'final_price cannot exceed original_price'
     end
@@ -17,15 +19,18 @@ class DiscountedPrice
     @message = message
   end
 
+  # Returns the absolute discount amount
   def total_discount
     original_price - final_price
   end
 
+  # Returns discount as a percentage of the original price
   def discount_percentage
     return 0 if original_price.zero?
     ((total_discount / original_price) * 100).round(2)
   end
 
+  # Pretty-prints price and discount details in a readable format
   def print_details
     <<~DETAILS
       1. Original Price: #{format_price(original_price)}

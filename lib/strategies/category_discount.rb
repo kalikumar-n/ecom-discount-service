@@ -2,6 +2,7 @@ require_relative 'base_discount'
 
 class CategoryDiscount < BaseDiscount
 
+  # Mapping of categories to their respective discount percentages
   CATEGORY_DISCOUNTS = {
     'electronics' => 0.15,   # 15% discount for electronics products
     'clothing' => 0.10,      # 10% discount for clothing
@@ -9,6 +10,7 @@ class CategoryDiscount < BaseDiscount
     'home' => 0.05           # 5% discount for home goods
   }.freeze
 
+  # Applies category-based discounts on cart items.
   def apply(cart_items:, current_price:, **)
     discount_amount = 0
 
